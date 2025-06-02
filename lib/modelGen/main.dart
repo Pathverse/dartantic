@@ -45,7 +45,10 @@ class ModelGenerator extends GeneratorForAnnotation<DttModel> {
     final methodSources = [
       CreateMethodGenerator.generate(element, fieldMetaDict).source,
       PreprocessMethodGenerator.generate(element, fieldMetaDict).source,
-      ValidateMethodGenerator.generate(element, fieldMetaDict).source,
+      ...ValidateMethodGenerator.generate(
+        element,
+        fieldMetaDict,
+      ).map((asg) => asg.source),
       PostprocessMethodGenerator.generate(element, fieldMetaDict).source,
       FromMapMethodGenerator.generate(element, fieldMetaDict).source,
       ToMapMethodGenerator.generate(element, fieldMetaDict).source,

@@ -1,0 +1,9 @@
+pre-commit:
+  parallel: true
+  commands:
+    flutter-analyze:
+      run: "flutter analyze"
+      root: "."
+    flutter-test:
+      run: "flutter test"
+      root: "." 

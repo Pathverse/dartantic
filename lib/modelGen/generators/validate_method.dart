@@ -4,35 +4,70 @@ import '../utils/field_utils.dart';
 import '../utils/code_utils.dart';
 
 class ValidateMethodGenerator {
-  static ASG generate(
+  static List<ASG> generate(
     ClassElement element,
     Map<String, dynamic> fieldMetaDict,
   ) {
-    final validationLines = <String>[];
+    final methods = <ASG>[];
+    final fieldValidations = <String, List<String>>{};
 
-    // Process field annotations using fieldMetaDict - generate validation code directly
-    _generateAnnotationValidations(element, fieldMetaDict, validationLines);
-
-    // Process static validation methods
-    _generateStaticValidations(element, fieldMetaDict, validationLines);
-
-    // If no validations, add a comment
-    if (validationLines.isEmpty) {
-      validationLines.add('// No validations found');
+    // Initialize validation map for all fields
+    for (final fieldName in fieldMetaDict.keys) {
+      fieldValidations[fieldName] = [];
     }
 
-    return CodeUtils.createMethod(
-      name: 'dttValidate',
-      returnType: 'void',
-      parameters: ['Map<String, dynamic> values'],
-      bodyLines: validationLines,
+    // Process field annotations using fieldMetaDict - generate validation code for each field
+    _generateAnnotationValidations(element, fieldMetaDict, fieldValidations);
+
+    // Process static validation methods
+    _generateStaticValidations(element, fieldMetaDict, fieldValidations);
+
+    // Generate individual field validation methods for ALL fields
+    for (final fieldName in fieldMetaDict.keys) {
+      final validationLines = fieldValidations[fieldName] ?? [];
+
+      // Always generate the method, even if empty
+      methods.add(
+        CodeUtils.createMethod(
+          name: 'dttValidateField_$fieldName',
+          returnType: 'void',
+          parameters: ['dynamic value', 'Map<String, dynamic> values'],
+          bodyLines:
+              validationLines.map((line) {
+                // Replace values['fieldName'] with value in the validation lines
+                // Also fix any incorrect references to values['value']
+                return line
+                    .replaceAll("values['$fieldName']", 'value')
+                    .replaceAll("values['value']", 'value');
+              }).toList(),
+        ),
+      );
+    }
+
+    // Generate main dttValidate method that uses the individual field validations
+    final mainValidationLines = <String>[];
+    for (final fieldName in fieldMetaDict.keys) {
+      mainValidationLines.add(
+        'if (values[\'$fieldName\'] != null) dttValidateField_$fieldName(values[\'$fieldName\'], values);',
+      );
+    }
+
+    methods.add(
+      CodeUtils.createMethod(
+        name: 'dttValidate',
+        returnType: 'void',
+        parameters: ['Map<String, dynamic> values'],
+        bodyLines: mainValidationLines,
+      ),
     );
+
+    return methods;
   }
 
   static void _generateAnnotationValidations(
     ClassElement element,
     Map<String, dynamic> fieldMetaDict,
-    List<String> validationLines,
+    Map<String, List<String>> fieldValidations,
   ) {
     for (final fieldName in fieldMetaDict.keys) {
       // Find the actual field element to get annotations
@@ -52,22 +87,26 @@ class ValidateMethodGenerator {
         // Generate validation code based on annotation type
         try {
           if (typeStr == 'DttvNotNull') {
-            validationLines.addAll(CodeUtils.generateNullCheck(fieldName));
+            fieldValidations[fieldName]!.addAll(
+              CodeUtils.generateNullCheck(fieldName).map((line) {
+                return line.replaceAll("values['$fieldName']", 'value');
+              }),
+            );
           } else if (typeStr == 'DttvMinLength') {
             final minLength = obj.getField('minLength')?.toIntValue() ?? 0;
-            validationLines.addAll(
+            fieldValidations[fieldName]!.addAll(
               CodeUtils.generateConditionalValidation(
                 fieldName,
-                'values[\'$fieldName\'].length < $minLength',
+                'value.length < $minLength',
                 '$fieldName must be at least $minLength characters',
               ),
             );
           } else if (typeStr == 'DttvMaxLength') {
             final maxLength = obj.getField('maxLength')?.toIntValue() ?? 0;
-            validationLines.addAll(
+            fieldValidations[fieldName]!.addAll(
               CodeUtils.generateConditionalValidation(
                 fieldName,
-                'values[\'$fieldName\'].length > $maxLength',
+                'value.length > $maxLength',
                 '$fieldName must be at most $maxLength characters',
               ),
             );
@@ -77,10 +116,10 @@ class ValidateMethodGenerator {
             if (funcField != null) {
               final funcName = funcField.toFunctionValue()?.displayName;
               if (funcName != null) {
-                validationLines.addAll(
+                fieldValidations[fieldName]!.addAll(
                   CodeUtils.generateConditionalValidation(
                     fieldName,
-                    '!$funcName(values[\'$fieldName\'])',
+                    '!$funcName(value)',
                     '$fieldName failed custom validation',
                   ),
                 );
@@ -88,7 +127,7 @@ class ValidateMethodGenerator {
             }
           }
         } catch (e) {
-          validationLines.add(
+          fieldValidations[fieldName]!.add(
             '// Error generating validation for $typeStr on $fieldName: $e',
           );
         }
@@ -99,7 +138,7 @@ class ValidateMethodGenerator {
   static void _generateStaticValidations(
     ClassElement element,
     Map<String, dynamic> fieldMetaDict,
-    List<String> validationLines,
+    Map<String, List<String>> fieldValidations,
   ) {
     final validateMethods = FieldUtils.getStaticMethodsByType(
       element,
@@ -114,10 +153,11 @@ class ValidateMethodGenerator {
         final validationCall = CodeUtils.generateStaticMethodCall(
           element.name,
           method.name,
-          fieldName,
+          'value',
           hasValuesParam,
         );
-        validationLines.addAll(
+
+        fieldValidations[fieldName]!.addAll(
           CodeUtils.generateConditionalValidation(
             fieldName,
             '!$validationCall',
@@ -125,7 +165,9 @@ class ValidateMethodGenerator {
           ),
         );
       } else if (fieldName != null) {
-        validationLines.add(CodeUtils.generateFieldWarning(fieldName));
+        fieldValidations[fieldName]!.add(
+          CodeUtils.generateFieldWarning(fieldName),
+        );
       }
     }
   }

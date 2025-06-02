@@ -94,51 +94,102 @@ mixin _$UserMixin {
     return values;
   }
 
-  static void dttValidate(Map<String, dynamic> values) {
-    if (values['name'] != null && !validateCustomLength(values['name'])) {
+  static void dttValidateField_name(
+    dynamic value,
+    Map<String, dynamic> values,
+  ) {
+    if (value != null && !validateCustomLength(value)) {
       throw DttValidationError('name', 'name failed custom validation');
     }
-    if (values['name'] != null && values['name'].length < 2) {
+    if (value != null && value.length < 2) {
       throw DttValidationError('name', 'name must be at least 2 characters');
     }
-    if (values['age'] == null) {
+    if (value != null && !User._dttvalidate_name(value)) {
+      throw DttValidationError('name', 'name failed custom validation');
+    }
+  }
+
+  static void dttValidateField_age(dynamic value, Map<String, dynamic> values) {
+    if (value == null) {
       throw DttValidationError('age', 'age is required');
     }
-    if (values['email'] != null && !validateEmailFormat(values['email'])) {
+    if (value != null && !User._dttvalidate_age(value)) {
+      throw DttValidationError('age', 'age failed custom validation');
+    }
+  }
+
+  static void dttValidateField_email(
+    dynamic value,
+    Map<String, dynamic> values,
+  ) {
+    if (value != null && !validateEmailFormat(value)) {
       throw DttValidationError('email', 'email failed custom validation');
     }
-    if (values['email'] != null && values['email'].length < 5) {
+    if (value != null && value.length < 5) {
       throw DttValidationError('email', 'email must be at least 5 characters');
     }
-    if (values['email'] != null && values['email'].length > 50) {
+    if (value != null && value.length > 50) {
       throw DttValidationError('email', 'email must be at most 50 characters');
     }
-    if (values['password'] != null &&
-        !validateStrongPassword(values['password'])) {
+    if (value != null && !User._dttvalidate_email(value, values)) {
+      throw DttValidationError('email', 'email failed custom validation');
+    }
+  }
+
+  static void dttValidateField_password(
+    dynamic value,
+    Map<String, dynamic> values,
+  ) {
+    if (value != null && !validateStrongPassword(value)) {
       throw DttValidationError('password', 'password failed custom validation');
     }
-    if (values['password'] != null && values['password'].length < 8) {
+    if (value != null && value.length < 8) {
       throw DttValidationError(
         'password',
         'password must be at least 8 characters',
       );
     }
-    if (values['nickname'] != null && values['nickname'].length < 3) {
+  }
+
+  static void dttValidateField_isActive(
+    dynamic value,
+    Map<String, dynamic> values,
+  ) {}
+  static void dttValidateField_createdAt(
+    dynamic value,
+    Map<String, dynamic> values,
+  ) {}
+  static void dttValidateField_updatedAt(
+    dynamic value,
+    Map<String, dynamic> values,
+  ) {}
+  static void dttValidateField_nickname(
+    dynamic value,
+    Map<String, dynamic> values,
+  ) {
+    if (value != null && value.length < 3) {
       throw DttValidationError(
         'nickname',
         'nickname must be at least 3 characters',
       );
     }
-    if (values['email'] != null &&
-        !User._dttvalidate_email(values['email'], values)) {
-      throw DttValidationError('email', 'email failed custom validation');
-    }
-    if (values['age'] != null && !User._dttvalidate_age(values['age'])) {
-      throw DttValidationError('age', 'age failed custom validation');
-    }
-    if (values['name'] != null && !User._dttvalidate_name(values['name'])) {
-      throw DttValidationError('name', 'name failed custom validation');
-    }
+  }
+
+  static void dttValidate(Map<String, dynamic> values) {
+    if (values['name'] != null) dttValidateField_name(values['name'], values);
+    if (values['age'] != null) dttValidateField_age(values['age'], values);
+    if (values['email'] != null)
+      dttValidateField_email(values['email'], values);
+    if (values['password'] != null)
+      dttValidateField_password(values['password'], values);
+    if (values['isActive'] != null)
+      dttValidateField_isActive(values['isActive'], values);
+    if (values['createdAt'] != null)
+      dttValidateField_createdAt(values['createdAt'], values);
+    if (values['updatedAt'] != null)
+      dttValidateField_updatedAt(values['updatedAt'], values);
+    if (values['nickname'] != null)
+      dttValidateField_nickname(values['nickname'], values);
   }
 
   static Map<String, dynamic> dttPostprocess(Map<String, dynamic> values) {
@@ -226,29 +277,45 @@ mixin _$ProfileMixin {
     return values;
   }
 
-  static void dttValidate(Map<String, dynamic> values) {
-    if (values['bio'] == null) {
+  static void dttValidateField_bio(dynamic value, Map<String, dynamic> values) {
+    if (value == null) {
       throw DttValidationError('bio', 'bio is required');
     }
-    if (values['bio'] != null && values['bio'].length < 1) {
+    if (value != null && value.length < 1) {
       throw DttValidationError('bio', 'bio must be at least 1 characters');
     }
-    if (values['website'] != null && values['website'].length < 3) {
+  }
+
+  static void dttValidateField_website(
+    dynamic value,
+    Map<String, dynamic> values,
+  ) {
+    if (value != null && value.length < 3) {
       throw DttValidationError(
         'website',
         'website must be at least 3 characters',
       );
     }
-    if (values['website'] != null && values['website'].length > 20) {
+    if (value != null && value.length > 20) {
       throw DttValidationError(
         'website',
         'website must be at most 20 characters',
       );
     }
-    if (values['website'] != null &&
-        !Profile._dttvalidate_website(values['website'])) {
+    if (value != null && !Profile._dttvalidate_website(value)) {
       throw DttValidationError('website', 'website failed custom validation');
     }
+  }
+
+  static void dttValidateField_user(
+    dynamic value,
+    Map<String, dynamic> values,
+  ) {}
+  static void dttValidate(Map<String, dynamic> values) {
+    if (values['bio'] != null) dttValidateField_bio(values['bio'], values);
+    if (values['website'] != null)
+      dttValidateField_website(values['website'], values);
+    if (values['user'] != null) dttValidateField_user(values['user'], values);
   }
 
   static Map<String, dynamic> dttPostprocess(Map<String, dynamic> values) {

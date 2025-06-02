@@ -60,38 +60,68 @@ mixin _$AddressMixin {
     return values;
   }
 
-  static void dttValidate(Map<String, dynamic> values) {
-    if (values['street'] == null) {
+  static void dttValidateField_street(
+    dynamic value,
+    Map<String, dynamic> values,
+  ) {
+    if (value == null) {
       throw DttValidationError('street', 'street is required');
     }
-    if (values['street'] != null && values['street'].length < 5) {
+    if (value != null && value.length < 5) {
       throw DttValidationError(
         'street',
         'street must be at least 5 characters',
       );
     }
-    if (values['city'] == null) {
+  }
+
+  static void dttValidateField_city(
+    dynamic value,
+    Map<String, dynamic> values,
+  ) {
+    if (value == null) {
       throw DttValidationError('city', 'city is required');
     }
-    if (values['city'] != null && values['city'].length < 2) {
+    if (value != null && value.length < 2) {
       throw DttValidationError('city', 'city must be at least 2 characters');
     }
-    if (values['country'] == null) {
+  }
+
+  static void dttValidateField_country(
+    dynamic value,
+    Map<String, dynamic> values,
+  ) {
+    if (value == null) {
       throw DttValidationError('country', 'country is required');
     }
-    if (values['country'] != null && values['country'].length < 2) {
+    if (value != null && value.length < 2) {
       throw DttValidationError(
         'country',
         'country must be at least 2 characters',
       );
     }
-    if (values['postalCode'] != null &&
-        !Address._dttvalidate_postalCode(values['postalCode'])) {
+  }
+
+  static void dttValidateField_postalCode(
+    dynamic value,
+    Map<String, dynamic> values,
+  ) {
+    if (value != null && !Address._dttvalidate_postalCode(value)) {
       throw DttValidationError(
         'postalCode',
         'postalCode failed custom validation',
       );
     }
+  }
+
+  static void dttValidate(Map<String, dynamic> values) {
+    if (values['street'] != null)
+      dttValidateField_street(values['street'], values);
+    if (values['city'] != null) dttValidateField_city(values['city'], values);
+    if (values['country'] != null)
+      dttValidateField_country(values['country'], values);
+    if (values['postalCode'] != null)
+      dttValidateField_postalCode(values['postalCode'], values);
   }
 
   static Map<String, dynamic> dttPostprocess(Map<String, dynamic> values) {
@@ -171,20 +201,41 @@ mixin _$ContactInfoMixin {
     return values;
   }
 
-  static void dttValidate(Map<String, dynamic> values) {
-    if (values['email'] == null) {
+  static void dttValidateField_email(
+    dynamic value,
+    Map<String, dynamic> values,
+  ) {
+    if (value == null) {
       throw DttValidationError('email', 'email is required');
     }
-    if (values['email'] != null && !validateEmailFormat(values['email'])) {
+    if (value != null && !validateEmailFormat(value)) {
       throw DttValidationError('email', 'email failed custom validation');
     }
-    if (values['phone'] != null && values['phone'].length < 10) {
+  }
+
+  static void dttValidateField_phone(
+    dynamic value,
+    Map<String, dynamic> values,
+  ) {
+    if (value != null && value.length < 10) {
       throw DttValidationError('phone', 'phone must be at least 10 characters');
     }
-    if (values['phone'] != null &&
-        !ContactInfo._dttvalidate_phone(values['phone'])) {
+    if (value != null && !ContactInfo._dttvalidate_phone(value)) {
       throw DttValidationError('phone', 'phone failed custom validation');
     }
+  }
+
+  static void dttValidateField_address(
+    dynamic value,
+    Map<String, dynamic> values,
+  ) {}
+  static void dttValidate(Map<String, dynamic> values) {
+    if (values['email'] != null)
+      dttValidateField_email(values['email'], values);
+    if (values['phone'] != null)
+      dttValidateField_phone(values['phone'], values);
+    if (values['address'] != null)
+      dttValidateField_address(values['address'], values);
   }
 
   static Map<String, dynamic> dttPostprocess(Map<String, dynamic> values) {
@@ -271,23 +322,49 @@ mixin _$EmployeeMixin {
     return values;
   }
 
-  static void dttValidate(Map<String, dynamic> values) {
-    if (values['name'] == null) {
+  static void dttValidateField_name(
+    dynamic value,
+    Map<String, dynamic> values,
+  ) {
+    if (value == null) {
       throw DttValidationError('name', 'name is required');
     }
-    if (values['name'] != null && values['name'].length < 2) {
+    if (value != null && value.length < 2) {
       throw DttValidationError('name', 'name must be at least 2 characters');
     }
-    if (values['employeeId'] == null) {
+  }
+
+  static void dttValidateField_employeeId(
+    dynamic value,
+    Map<String, dynamic> values,
+  ) {
+    if (value == null) {
       throw DttValidationError('employeeId', 'employeeId is required');
     }
-    if (values['employeeId'] != null &&
-        !Employee._dttvalidate_employeeId(values['employeeId'])) {
+    if (value != null && !Employee._dttvalidate_employeeId(value)) {
       throw DttValidationError(
         'employeeId',
         'employeeId failed custom validation',
       );
     }
+  }
+
+  static void dttValidateField_contact(
+    dynamic value,
+    Map<String, dynamic> values,
+  ) {}
+  static void dttValidateField_manager(
+    dynamic value,
+    Map<String, dynamic> values,
+  ) {}
+  static void dttValidate(Map<String, dynamic> values) {
+    if (values['name'] != null) dttValidateField_name(values['name'], values);
+    if (values['employeeId'] != null)
+      dttValidateField_employeeId(values['employeeId'], values);
+    if (values['contact'] != null)
+      dttValidateField_contact(values['contact'], values);
+    if (values['manager'] != null)
+      dttValidateField_manager(values['manager'], values);
   }
 
   static Map<String, dynamic> dttPostprocess(Map<String, dynamic> values) {

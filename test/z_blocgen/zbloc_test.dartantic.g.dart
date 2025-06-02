@@ -48,10 +48,25 @@ mixin _$TestUserMixin {
     return values;
   }
 
-  static void dttValidate(Map<String, dynamic> values) {
-    if (values['age'] != null && !TestUser._dttvalidate_age(values['age'])) {
+  static void dttValidateField_name(
+    dynamic value,
+    Map<String, dynamic> values,
+  ) {}
+  static void dttValidateField_age(dynamic value, Map<String, dynamic> values) {
+    if (value != null && !TestUser._dttvalidate_age(value)) {
       throw DttValidationError('age', 'age failed custom validation');
     }
+  }
+
+  static void dttValidateField_email(
+    dynamic value,
+    Map<String, dynamic> values,
+  ) {}
+  static void dttValidate(Map<String, dynamic> values) {
+    if (values['name'] != null) dttValidateField_name(values['name'], values);
+    if (values['age'] != null) dttValidateField_age(values['age'], values);
+    if (values['email'] != null)
+      dttValidateField_email(values['email'], values);
   }
 
   static Map<String, dynamic> dttPostprocess(Map<String, dynamic> values) {
