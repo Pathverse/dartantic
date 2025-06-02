@@ -48,7 +48,7 @@ class ValidateMethodGenerator {
     final mainValidationLines = <String>[];
     for (final fieldName in fieldMetaDict.keys) {
       mainValidationLines.add(
-        'if (values[\'$fieldName\'] != null) dttValidateField_$fieldName(values[\'$fieldName\'], values);',
+        'if (values[\'$fieldName\'] != null){ dttValidateField_$fieldName(values[\'$fieldName\'], values); }',
       );
     }
 

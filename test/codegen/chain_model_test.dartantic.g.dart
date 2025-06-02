@@ -115,13 +115,18 @@ mixin _$AddressMixin {
   }
 
   static void dttValidate(Map<String, dynamic> values) {
-    if (values['street'] != null)
+    if (values['street'] != null) {
       dttValidateField_street(values['street'], values);
-    if (values['city'] != null) dttValidateField_city(values['city'], values);
-    if (values['country'] != null)
+    }
+    if (values['city'] != null) {
+      dttValidateField_city(values['city'], values);
+    }
+    if (values['country'] != null) {
       dttValidateField_country(values['country'], values);
-    if (values['postalCode'] != null)
+    }
+    if (values['postalCode'] != null) {
       dttValidateField_postalCode(values['postalCode'], values);
+    }
   }
 
   static Map<String, dynamic> dttPostprocess(Map<String, dynamic> values) {
@@ -230,12 +235,15 @@ mixin _$ContactInfoMixin {
     Map<String, dynamic> values,
   ) {}
   static void dttValidate(Map<String, dynamic> values) {
-    if (values['email'] != null)
+    if (values['email'] != null) {
       dttValidateField_email(values['email'], values);
-    if (values['phone'] != null)
+    }
+    if (values['phone'] != null) {
       dttValidateField_phone(values['phone'], values);
-    if (values['address'] != null)
+    }
+    if (values['address'] != null) {
       dttValidateField_address(values['address'], values);
+    }
   }
 
   static Map<String, dynamic> dttPostprocess(Map<String, dynamic> values) {
@@ -358,13 +366,18 @@ mixin _$EmployeeMixin {
     Map<String, dynamic> values,
   ) {}
   static void dttValidate(Map<String, dynamic> values) {
-    if (values['name'] != null) dttValidateField_name(values['name'], values);
-    if (values['employeeId'] != null)
+    if (values['name'] != null) {
+      dttValidateField_name(values['name'], values);
+    }
+    if (values['employeeId'] != null) {
       dttValidateField_employeeId(values['employeeId'], values);
-    if (values['contact'] != null)
+    }
+    if (values['contact'] != null) {
       dttValidateField_contact(values['contact'], values);
-    if (values['manager'] != null)
+    }
+    if (values['manager'] != null) {
       dttValidateField_manager(values['manager'], values);
+    }
   }
 
   static Map<String, dynamic> dttPostprocess(Map<String, dynamic> values) {

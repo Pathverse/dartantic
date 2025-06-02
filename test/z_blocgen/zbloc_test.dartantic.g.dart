@@ -63,10 +63,15 @@ mixin _$TestUserMixin {
     Map<String, dynamic> values,
   ) {}
   static void dttValidate(Map<String, dynamic> values) {
-    if (values['name'] != null) dttValidateField_name(values['name'], values);
-    if (values['age'] != null) dttValidateField_age(values['age'], values);
-    if (values['email'] != null)
+    if (values['name'] != null) {
+      dttValidateField_name(values['name'], values);
+    }
+    if (values['age'] != null) {
+      dttValidateField_age(values['age'], values);
+    }
+    if (values['email'] != null) {
       dttValidateField_email(values['email'], values);
+    }
   }
 
   static Map<String, dynamic> dttPostprocess(Map<String, dynamic> values) {

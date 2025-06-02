@@ -176,20 +176,30 @@ mixin _$UserMixin {
   }
 
   static void dttValidate(Map<String, dynamic> values) {
-    if (values['name'] != null) dttValidateField_name(values['name'], values);
-    if (values['age'] != null) dttValidateField_age(values['age'], values);
-    if (values['email'] != null)
+    if (values['name'] != null) {
+      dttValidateField_name(values['name'], values);
+    }
+    if (values['age'] != null) {
+      dttValidateField_age(values['age'], values);
+    }
+    if (values['email'] != null) {
       dttValidateField_email(values['email'], values);
-    if (values['password'] != null)
+    }
+    if (values['password'] != null) {
       dttValidateField_password(values['password'], values);
-    if (values['isActive'] != null)
+    }
+    if (values['isActive'] != null) {
       dttValidateField_isActive(values['isActive'], values);
-    if (values['createdAt'] != null)
+    }
+    if (values['createdAt'] != null) {
       dttValidateField_createdAt(values['createdAt'], values);
-    if (values['updatedAt'] != null)
+    }
+    if (values['updatedAt'] != null) {
       dttValidateField_updatedAt(values['updatedAt'], values);
-    if (values['nickname'] != null)
+    }
+    if (values['nickname'] != null) {
       dttValidateField_nickname(values['nickname'], values);
+    }
   }
 
   static Map<String, dynamic> dttPostprocess(Map<String, dynamic> values) {
@@ -312,10 +322,15 @@ mixin _$ProfileMixin {
     Map<String, dynamic> values,
   ) {}
   static void dttValidate(Map<String, dynamic> values) {
-    if (values['bio'] != null) dttValidateField_bio(values['bio'], values);
-    if (values['website'] != null)
+    if (values['bio'] != null) {
+      dttValidateField_bio(values['bio'], values);
+    }
+    if (values['website'] != null) {
       dttValidateField_website(values['website'], values);
-    if (values['user'] != null) dttValidateField_user(values['user'], values);
+    }
+    if (values['user'] != null) {
+      dttValidateField_user(values['user'], values);
+    }
   }
 
   static Map<String, dynamic> dttPostprocess(Map<String, dynamic> values) {
