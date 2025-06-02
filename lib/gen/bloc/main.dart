@@ -4,7 +4,7 @@ import 'package:dartantic/build_runner.dart';
 import 'generators/state_generator.dart';
 import 'generators/event_generator.dart';
 import 'generators/cubit_generator.dart';
-import '../asg/asg.dart';
+import '../../asg/asg.dart';
 
 /// Main bloc generator class that orchestrates all generators
 class BlocGenerator {

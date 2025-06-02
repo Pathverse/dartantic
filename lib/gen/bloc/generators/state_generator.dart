@@ -1,5 +1,5 @@
 import 'generator_base.dart';
-import '../../../asg/asg.dart';
+import '../../../../asg/asg.dart';
 
 /// Generates all state-related classes for a bloc
 class StateGenerator extends BlocGeneratorBase {

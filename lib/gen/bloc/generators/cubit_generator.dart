@@ -1,5 +1,5 @@
 import 'generator_base.dart';
-import '../../../asg/asg.dart';
+import '../../../../asg/asg.dart';
 
 /// Generates the cubit class for a bloc
 class CubitGenerator extends BlocGeneratorBase {

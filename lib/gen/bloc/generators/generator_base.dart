@@ -1,4 +1,4 @@
-import '../../asg/asg.dart';
+import '../../../asg/asg.dart';
 import 'package:path/path.dart' as path;
 
 /// Base class for all bloc generators that provides common utilities

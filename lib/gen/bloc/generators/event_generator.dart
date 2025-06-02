@@ -1,5 +1,5 @@
 import 'generator_base.dart';
-import '../../../asg/asg.dart';
+import '../../../../asg/asg.dart';
 
 /// Generates all event-related classes for a bloc
 class EventGenerator extends BlocGeneratorBase {

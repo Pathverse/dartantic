@@ -2,7 +2,7 @@
 
 import 'dart:io';
 import 'package:path/path.dart' as path;
-import 'package:dartantic/blocGen/main.dart';
+import 'package:dartantic/gen/bloc/main.dart';
 import 'package:dartantic/tools/build_runner.dart';
 
 /// Main function to generate blocs in the current package
