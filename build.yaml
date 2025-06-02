@@ -10,7 +10,7 @@ targets:
 
 builders:
   model_generator:
-    import: "package:dartantic/modelGen/main.dart"
+    import: "package:dartantic/gen/model/main.dart"
     builder_factories: ["modelGeneratorBuilder"]
     build_extensions: {".dart": [".dartantic.g.dart"]}
     auto_apply: dependents
