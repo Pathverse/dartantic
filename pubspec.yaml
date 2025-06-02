@@ -1,0 +1,30 @@
+name: dartantic
+description: A powerful model validation and processing system using decorators.
+version: 0.1.0
+homepage: https://github.com/yourusername/dartantic
+
+environment:
+  sdk: '>=3.7.3 <4.0.0'
+
+dependencies:
+  build_runner: ^2.4.0
+  source_gen: ^2.0.0
+  meta: ^1.9.1
+  args: ^2.4.2 
+  
+
+dev_dependencies:
+  test: ^1.24.0
+  lints: ^6.0.0
+  analyzer: ^7.4.5
+  build: ^2.4.0
+  bloc_test: ^10.0.0
+  equatable: ^2.0.7
+  bloc: ^9.0.0
+
+# Register custom tools
+executables:
+  dartantic: dartantic
+
+# For information on the generic Dart part of this file, see the
+# following page: https://dart.dev/tools/pub/pubspec
