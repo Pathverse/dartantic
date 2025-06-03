@@ -610,6 +610,41 @@ class ASG {
     return asg;
   }
 
+  /// Generate a mixin declaration
+  static ASG MIXIN({
+    required String name,
+    List<String>? onList,
+    List<String>? implementsList,
+    List<ASG>? fields,
+    List<ASG>? methods,
+  }) {
+    final asg = ASG();
+    final onStr = onList?.isNotEmpty == true ? ' on ${onList!.join(', ')}' : '';
+    final implementsStr =
+        implementsList?.isNotEmpty == true
+            ? ' implements ${implementsList!.join(', ')}'
+            : '';
+
+    asg.addLine('mixin $name$onStr$implementsStr {');
+    asg.indentCounter++;
+    if (fields?.isNotEmpty == true) {
+      for (final field in fields!) {
+        asg.add(field.source);
+      }
+      if (methods?.isNotEmpty == true) {
+        asg.addLine('');
+      }
+    }
+    if (methods?.isNotEmpty == true) {
+      for (final method in methods!) {
+        asg.add(method.source);
+      }
+    }
+    asg.indentCounter--;
+    asg.addLine('}');
+    return asg;
+  }
+
   /// Generate a singleton class with standard pattern:
   /// - Private constructor
   /// - Static late instance
