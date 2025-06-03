@@ -1,7 +1,6 @@
 #!/usr/bin/env dart
 
 import 'dart:io';
-import 'package:path/path.dart' as path;
 import 'package:dartantic/gen/bloc/main.dart';
 import 'package:dartantic/tools/build_runner.dart';
 
