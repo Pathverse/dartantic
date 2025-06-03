@@ -3,16 +3,27 @@
 import 'dart:io';
 import 'package:path/path.dart' as path;
 import 'package:args/command_runner.dart';
-import 'package:dartantic/tools/generate_blocs.dart';
-import 'package:dartantic/tools/build_runner.dart';
+import 'package:dartantic/gen/bloc/main.dart' show BlocGenerator;
 
-class DartanticCommand extends Command {
+class MakeCommand extends Command {
   @override
-  String get name => 'gen';
+  String get name => 'make';
   @override
-  String get description => 'Parse and generate model validation logic';
+  String get description => 'Generate code using dartantic';
 
-  DartanticCommand() {
+  MakeCommand() {
+    addSubcommand(MakeModelCommand());
+    addSubcommand(MakeBlocCommand());
+  }
+}
+
+class MakeModelCommand extends Command {
+  @override
+  String get name => 'model';
+  @override
+  String get description => 'Generate model validation logic';
+
+  MakeModelCommand() {
     argParser
       ..addFlag(
         'verbose',
@@ -23,7 +34,7 @@ class DartanticCommand extends Command {
       ..addFlag(
         'force',
         abbr: 'f',
-        help: 'Force regeneration of all files',
+        help: 'Force regeneration of all model files',
         defaultsTo: false,
       )
       ..addFlag(
@@ -31,17 +42,6 @@ class DartanticCommand extends Command {
         abbr: 'b',
         help: 'Generate bloc code in addition to models',
         defaultsTo: false,
-      )
-      ..addFlag(
-        'bloc-only',
-        help: 'Generate only bloc code without running model generator',
-        defaultsTo: false,
-      )
-      ..addOption(
-        'output',
-        abbr: 'o',
-        help: 'Output directory for generated files',
-        defaultsTo: 'lib/generated',
       );
   }
 
@@ -50,131 +50,158 @@ class DartanticCommand extends Command {
     final verbose = argResults!['verbose'] as bool;
     final force = argResults!['force'] as bool;
     final bloc = argResults!['bloc'] as bool;
-    final blocOnly = argResults!['bloc-only'] as bool;
-    final output = argResults!['output'] as String;
+
+    if (force && bloc) {
+      throw UsageException(
+        'Cannot use --force and --bloc together',
+        'Use --force for model regeneration or --bloc for bloc generation, but not both',
+      );
+    }
 
     if (verbose) {
       print('Running in verbose mode');
       print('Force regeneration: $force');
       print('Generate bloc: $bloc');
-      print('Bloc only mode: $blocOnly');
-      print('Output directory: $output');
     }
 
-    await _runGenerate(verbose, force, bloc, blocOnly, output);
-  }
-
-  void printUsage() {
-    print('Usage: dart run dartantic gen [options]');
-    print('\nOptions:');
-    print(argParser.usage);
+    await _runModelGenerate(verbose, force, bloc);
   }
 }
 
-class TestCommand extends Command {
+class MakeBlocCommand extends Command {
   @override
-  String get name => 'test';
+  String get name => 'bloc';
   @override
-  String get description => 'Run tests';
+  String get description => 'Generate bloc state management code';
 
-  TestCommand() {
+  MakeBlocCommand() {
     argParser
       ..addFlag(
-        'coverage',
-        abbr: 'c',
-        help: 'Generate coverage report',
+        'verbose',
+        abbr: 'v',
+        help: 'Enable verbose output',
         defaultsTo: false,
       )
-      ..addOption('name', abbr: 'n', help: 'Run tests matching name pattern');
+      ..addFlag(
+        'force',
+        abbr: 'f',
+        help: 'Force regeneration of all bloc files',
+        defaultsTo: false,
+      );
   }
 
   @override
   Future<void> run() async {
-    final coverage = argResults!['coverage'] as bool;
-    final name = argResults!['name'] as String?;
-    final verbose = (parent as DartanticCommand).argResults!['verbose'] as bool;
+    final verbose = argResults!['verbose'] as bool;
+    final force = argResults!['force'] as bool;
 
     if (verbose) {
-      print('Generate coverage: $coverage');
-      if (name != null) print('Test name pattern: $name');
+      print('Running in verbose mode');
+      print('Force regeneration: $force');
     }
 
-    await _runTest(verbose, coverage, name);
+    await _runBlocGenerate(verbose, force);
   }
 }
 
-Future<void> _runGenerate(
-  bool verbose,
-  bool force,
-  bool bloc,
-  bool blocOnly,
-  String output,
-) async {
-  if (verbose) print('Generating code...');
+/// Main function to generate blocs in the current package
+Future<void> _generateBlocs({
+  bool skipCleanup = false,
+  String? workingDirectory,
+}) async {
+  // Store original directory
+  final originalDir = Directory.current;
+  final projectDir =
+      workingDirectory != null ? Directory(workingDirectory) : originalDir;
 
-  // Store the original directory (user's package) BEFORE any directory changes
+  try {
+    // Change to project directory
+    Directory.current = projectDir;
+    print('📂 Working in directory: ${projectDir.path}');
+
+    // Check for .dartantic.g.dart files
+    var foundMetadataFiles = false;
+    await for (final entity in Directory(
+      path.join(projectDir.path, 'lib'),
+    ).list(recursive: true)) {
+      if (entity is File && entity.path.endsWith('.dartantic.g.dart')) {
+        foundMetadataFiles = true;
+        break;
+      }
+    }
+
+    if (!foundMetadataFiles) {
+      print(
+        '❌ No .dartantic.g.dart files found. Please run "dart run dartantic make model" first.',
+      );
+      exit(1);
+    }
+
+    // Generate blocs (cleanup is handled inside BlocGenerator)
+    print('🔄 Generating bloc files...');
+    await BlocGenerator.generate(
+      skipCleanup: skipCleanup,
+      workingDirectory: workingDirectory,
+    );
+    print('✅ Bloc generation completed');
+  } finally {
+    // Always restore original directory
+    Directory.current = originalDir;
+  }
+}
+
+Future<void> _runModelGenerate(bool verbose, bool force, bool bloc) async {
+  if (verbose) print('Generating model code...');
+
+  // Store the original directory (user's package)
   final userProjectDir = Directory.current;
   final scriptPath = Platform.script.path;
   final packageRoot = path.dirname(path.dirname(scriptPath));
 
   try {
-    // Create a function that runs build_runner in the user's package
-    Future<void> runBuildRunnerInUserPackage(List<String> args) async {
-      // Always ensure we're in the user's package directory
-      Directory.current = userProjectDir;
+    // Run build_runner for model generation
+    print('🏗️  Running build_runner in directory: ${userProjectDir.path}');
+    print(
+      '🏗️  Command: dart run build_runner build --delete-conflicting-outputs',
+    );
 
-      // Construct the full build_runner command
-      final buildRunnerArgs = ['run', 'build_runner', 'build'];
-      if (args.contains('--delete-conflicting-outputs')) {
-        buildRunnerArgs.add('--delete-conflicting-outputs');
-      }
+    final result = await Process.run('dart', [
+      'run',
+      'build_runner',
+      'build',
+      '--delete-conflicting-outputs',
+    ], workingDirectory: userProjectDir.path);
 
-      print('🏗️  Running build_runner in directory: ${userProjectDir.path}');
-      print('🏗️  Command: dart ${buildRunnerArgs.join(" ")}');
+    if (result.stdout.isNotEmpty) {
+      print(result.stdout);
+    }
 
-      final result = await Process.run(
-        'dart',
-        buildRunnerArgs,
-        workingDirectory: userProjectDir.path,
+    if (result.exitCode != 0) {
+      final errorMessage =
+          result.stderr.isNotEmpty
+              ? result.stderr
+              : 'Build runner failed with no error output';
+      print('❌ Build runner error output:');
+      print(errorMessage);
+      throw Exception(
+        'Build runner failed with exit code ${result.exitCode}\n$errorMessage',
       );
-
-      if (result.stdout.isNotEmpty) {
-        print(result.stdout);
-      }
-
-      if (result.exitCode != 0) {
-        final errorMessage =
-            result.stderr.isNotEmpty
-                ? result.stderr
-                : 'Build runner failed with no error output';
-        print('❌ Build runner error output:');
-        print(errorMessage);
-        throw Exception(
-          'Build runner failed with exit code ${result.exitCode}\n$errorMessage',
-        );
-      }
-
-      if (result.stderr.isNotEmpty) {
-        print('⚠️  Build runner warnings:');
-        print(result.stderr);
-      }
     }
 
-    // Run build_runner only once at the start
-    if (!blocOnly) {
-      await runBuildRunnerInUserPackage(['--delete-conflicting-outputs']);
+    if (result.stderr.isNotEmpty) {
+      print('⚠️  Build runner warnings:');
+      print(result.stderr);
     }
 
-    if (bloc || blocOnly) {
+    // Generate blocs if requested
+    if (bloc) {
       // Change to the package root for bloc generation
       Directory.current = Directory(packageRoot);
       print('📦 Changed to package root: ${packageRoot}');
 
       try {
-        // Generate blocs without running build_runner again
-        await generateBlocs(
-          skipModelGen: true, // Skip model gen since we already ran it
-          runBuildRunnerInPackage: null, // Don't run build_runner again
+        // Generate blocs
+        await _generateBlocs(
           skipCleanup: true, // Skip cleanup since it's handled by generateBlocs
           workingDirectory:
               userProjectDir.path, // Pass the user's project directory
@@ -193,33 +220,44 @@ Future<void> _runGenerate(
   }
 }
 
-Future<void> _runTest(bool verbose, bool coverage, String? name) async {
-  if (verbose) print('Running tests...');
+Future<void> _runBlocGenerate(bool verbose, bool force) async {
+  if (verbose) print('Generating bloc code...');
 
-  final testArgs = ['test'];
-  if (coverage) {
-    testArgs.add('--coverage');
-  }
-  if (name != null) {
-    testArgs.add('--name');
-    testArgs.add(name);
-  }
+  // Store the original directory (user's package)
+  final userProjectDir = Directory.current;
+  final scriptPath = Platform.script.path;
+  final packageRoot = path.dirname(path.dirname(scriptPath));
 
-  final result = await Process.run('flutter', testArgs);
-  print(result.stdout);
-  if (result.stderr.isNotEmpty) {
-    print(result.stderr);
+  try {
+    // Change to the package root for bloc generation
+    Directory.current = Directory(packageRoot);
+    print('📦 Changed to package root: ${packageRoot}');
+
+    try {
+      // Generate blocs
+      await _generateBlocs(
+        skipCleanup: !force, // Skip cleanup if not forcing regeneration
+        workingDirectory:
+            userProjectDir.path, // Pass the user's project directory
+      );
+    } catch (e, stackTrace) {
+      print('❌ Error during bloc generation:');
+      print(e);
+      print('Stack trace:');
+      print(stackTrace);
+      rethrow;
+    }
+  } finally {
+    // Always restore the original directory
+    Directory.current = userProjectDir;
   }
 }
 
 void main(List<String> args) async {
-  final runner =
-      CommandRunner(
-          'dartantic',
-          'A powerful model validation and processing system using decorators.',
-        )
-        ..addCommand(DartanticCommand())
-        ..addCommand(TestCommand());
+  final runner = CommandRunner(
+    'dartantic',
+    'A powerful model validation and processing system using decorators.',
+  )..addCommand(MakeCommand());
 
   try {
     await runner.run(args);
