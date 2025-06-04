@@ -10,109 +10,53 @@ class BlocGenerator {
   /// Generates bloc files for all annotated classes
   static Future<void> generate({
     bool skipCleanup = false,
-    String? workingDirectory,
+    List<File>? dartFiles,
   }) async {
-    // Store original directory
-    final originalDir = Directory.current;
-    final projectDir =
-        workingDirectory != null ? Directory(workingDirectory) : originalDir;
+    final projectDir = Directory.current;
+    print('📂 Working in directory: ${projectDir.path}');
 
-    try {
-      // Change to project directory
-      Directory.current = projectDir;
-      print('📂 Working in directory: ${projectDir.path}');
+    // Clean up existing bloc files first if not skipped
+    if (!skipCleanup) {
+      print('🧹 Cleaning up existing bloc files...');
+      await _cleanupExistingBlocFiles(projectDir.path);
+    }
 
-      // Clean up existing bloc files first if not skipped
-      if (!skipCleanup) {
-        print('🧹 Cleaning up existing bloc files...');
-        await _cleanupExistingBlocFiles(projectDir.path);
+    // Process provided files or scan for files
+    if (dartFiles != null && dartFiles.isNotEmpty) {
+      print('🔄 Processing ${dartFiles.length} files...');
+      for (final file in dartFiles) {
+        await _processFile(file.path);
       }
-
-      // Then generate new blocs
+    } else {
       print('🔄 Scanning for @dttBloc annotated classes...');
       var scannedFiles = 0;
       var foundFiles = 0;
       var generatedFiles = 0;
 
-      // Process lib directory
-      final libDir = Directory(path.join(projectDir.path, 'lib'));
-      if (await libDir.exists()) {
-        print('📂 Scanning lib directory: ${libDir.path}');
-        await for (final entity in libDir.list(recursive: true)) {
-          if (entity is File && entity.path.endsWith('.dart')) {
+      // Process both lib and test directories
+      for (final dirName in ['lib', 'test']) {
+        final dir = Directory(path.join(projectDir.path, dirName));
+        if (!await dir.exists()) continue;
+
+        await for (final entity in dir.list(recursive: true)) {
+          if (entity is File &&
+              entity.path.endsWith('.dart') &&
+              !entity.path.endsWith('.g.dart')) {
             scannedFiles++;
-            final relativePath = path.relative(
-              entity.path,
-              from: projectDir.path,
-            );
-            print('🔍 Scanning file: $relativePath');
             final content = await entity.readAsString();
-            if (RegExp(r'@dttbloc', caseSensitive: false).hasMatch(content)) {
-              print('  Found @DttBloc annotation in file');
-              if (RegExp(
-                r'@dttbloc\s*\(\)|@dttbloc\s*$|@dttbloc\s*[;{]',
-                caseSensitive: false,
-              ).hasMatch(content)) {
-                print('  Valid @DttBloc annotation found');
-                foundFiles++;
-                await _processFile(entity.path);
-                generatedFiles +=
-                    3; // Each file generates 3 files (state, event, cubit)
-              } else {
-                print('  @DttBloc found but not in valid format');
-              }
-            } else {
-              print('  No @DttBloc annotation found');
+            if (content.contains('@dttBloc')) {
+              foundFiles++;
+              await _processFile(entity.path);
+              generatedFiles++;
             }
           }
         }
-      } else {
-        print('⚠️  lib directory not found at: ${libDir.path}');
       }
 
-      // Process test directory if it exists
-      final testDir = Directory(path.join(projectDir.path, 'test'));
-      if (await testDir.exists()) {
-        print('📂 Scanning test directory: ${testDir.path}');
-        await for (final entity in testDir.list(recursive: true)) {
-          if (entity is File && entity.path.endsWith('.dart')) {
-            scannedFiles++;
-            final relativePath = path.relative(
-              entity.path,
-              from: projectDir.path,
-            );
-            print('🔍 Scanning file: $relativePath');
-            final content = await entity.readAsString();
-            if (RegExp(r'@dttbloc', caseSensitive: false).hasMatch(content)) {
-              print('  Found @DttBloc annotation in file');
-              if (RegExp(
-                r'@dttbloc\s*\(\)|@dttbloc\s*$|@dttbloc\s*[;{]',
-                caseSensitive: false,
-              ).hasMatch(content)) {
-                print('  Valid @DttBloc annotation found');
-                foundFiles++;
-                await _processFile(entity.path);
-                generatedFiles +=
-                    3; // Each file generates 3 files (state, event, cubit)
-              } else {
-                print('  @DttBloc found but not in valid format');
-              }
-            } else {
-              print('  No @DttBloc annotation found');
-            }
-          }
-        }
-      } else {
-        print('ℹ️  test directory not found at: ${testDir.path}');
-      }
-
-      print('\n📊 Summary:');
-      print('📊 Scanned $scannedFiles Dart files');
-      print('📊 Found $foundFiles files with @dttBloc annotation');
-      print('📊 Generated $generatedFiles bloc files');
-    } finally {
-      // Always restore original directory
-      Directory.current = originalDir;
+      print('📊 Summary:');
+      print('  Scanned: $scannedFiles files');
+      print('  Found: $foundFiles files with @dttBloc');
+      print('  Generated: $generatedFiles bloc files');
     }
   }
 
@@ -163,58 +107,92 @@ class BlocGenerator {
 
   /// Processes a single Dart file to generate its bloc
   static Future<void> _processFile(String filePath) async {
+    print('🔍 Starting to process file: ${path.relative(filePath)}');
+
     // Skip generator code itself
     if (filePath.contains('blocGen/generators/') ||
         filePath.contains('blocGen/main.dart')) {
+      print('  ⏩ Skipping generator code');
       return;
     }
 
     // Skip generated files
     if (filePath.endsWith('.g.dart')) {
+      print('  ⏩ Skipping generated file');
       return;
     }
 
     final content = await File(filePath).readAsString();
+    print('  📄 Read file content (${content.length} bytes)');
 
     // Only process files with @DttBloc annotation (case insensitive)
     // Look for the exact annotation pattern
-    if (!RegExp(r'@dttbloc', caseSensitive: false).hasMatch(content) ||
-        !RegExp(
-          r'@dttbloc\s*\(\)|@dttbloc\s*$|@dttbloc\s*[;{]',
-          caseSensitive: false,
-        ).hasMatch(content)) {
+    final hasAnnotation = RegExp(
+      r'@dttbloc',
+      caseSensitive: false,
+    ).hasMatch(content);
+    final hasValidAnnotation = RegExp(
+      r'@dttbloc\s*(?:\(\))?\s*(?:class|$)',
+      caseSensitive: false,
+    ).hasMatch(content);
+
+    print('  🔎 Annotation check:');
+    print('    - Has @dttBloc: $hasAnnotation');
+    print('    - Has valid format: $hasValidAnnotation');
+
+    if (!hasAnnotation || !hasValidAnnotation) {
+      print('  ⏩ Skipping - no valid @dttBloc annotation found');
       return;
     }
 
-    print('🔍 Processing ${path.relative(filePath)}');
-
     // Look for metadata file with correct extension
     final metadataPath = filePath.replaceAll('.dart', '.dartantic.g.dart');
+    print('  🔍 Looking for metadata file: ${path.relative(metadataPath)}');
+
     if (!await File(metadataPath).exists()) {
-      print('⚠️  Skipping ${path.relative(filePath)} - no metadata file found');
-      print('   Run "dart run dartantic gen" first to generate model files');
+      print('  ⚠️  Skipping - no metadata file found');
+      print(
+        '     Run "dart run dartantic model" first to generate model files',
+      );
+      return;
+    }
+
+    print('  ✅ Found metadata file');
+
+    // Check if bloc files already exist
+    final statePath = filePath.replaceAll('.dart', '.bloc.state.g.dart');
+    final eventPath = filePath.replaceAll('.dart', '.bloc.event.g.dart');
+    final cubitPath = filePath.replaceAll('.dart', '.bloc.cubit.g.dart');
+
+    final allFilesExist = await Future.wait([
+      File(statePath).exists(),
+      File(eventPath).exists(),
+      File(cubitPath).exists(),
+    ]).then((exists) => exists.every((e) => e));
+
+    if (allFilesExist) {
+      print('  ⏩ Skipping - bloc files already exist');
+      print('    Use --force to regenerate');
       return;
     }
 
     final metadata = await File(metadataPath).readAsString();
     final className = _extractClassName(metadata);
     if (className == null) {
-      print(
-        '⚠️  Skipping ${path.relative(filePath)} - could not extract class name from metadata',
-      );
+      print('  ⚠️  Skipping - could not extract class name from metadata');
       return;
     }
+    print('  ✅ Extracted class name: $className');
 
     final fields = _extractFields(metadata);
     if (fields.isEmpty) {
-      print(
-        '⚠️  Skipping ${path.relative(filePath)} - no fields found in metadata',
-      );
+      print('  ⚠️  Skipping - no fields found in metadata');
       return;
     }
+    print('  ✅ Extracted fields: ${fields.keys.join(', ')}');
 
     final originalFileName = path.basenameWithoutExtension(filePath);
-    print('📦 Generating bloc for $className in ${path.relative(filePath)}');
+    print('  📦 Generating bloc for $className in ${path.relative(filePath)}');
 
     try {
       // Generate state file
@@ -230,7 +208,7 @@ class BlocGenerator {
         '.bloc.state.g.dart',
       );
       await File(stateOutputPath).writeAsString(stateAsg.source);
-      print('✅ Generated ${path.relative(stateOutputPath)}');
+      print('  ✅ Generated ${path.relative(stateOutputPath)}');
 
       // Generate event file
       final eventGenerator = EventGenerator(
@@ -245,7 +223,7 @@ class BlocGenerator {
         '.bloc.event.g.dart',
       );
       await File(eventOutputPath).writeAsString(eventAsg.source);
-      print('✅ Generated ${path.relative(eventOutputPath)}');
+      print('  ✅ Generated ${path.relative(eventOutputPath)}');
 
       // Generate cubit file
       final cubitGenerator = CubitGenerator(
@@ -260,10 +238,12 @@ class BlocGenerator {
         '.bloc.cubit.g.dart',
       );
       await File(cubitOutputPath).writeAsString(cubitAsg.source);
-      print('✅ Generated ${path.relative(cubitOutputPath)}');
-    } catch (e) {
-      print('❌ Error generating bloc for $className: $e');
-      rethrow; // Rethrow to ensure we know if generation failed
+      print('  ✅ Generated ${path.relative(cubitOutputPath)}');
+    } catch (e, stackTrace) {
+      print('  ❌ Error generating bloc for $className:');
+      print('    Error: $e');
+      print('    Stack trace: $stackTrace');
+      rethrow;
     }
   }
 

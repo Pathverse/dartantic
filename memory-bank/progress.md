@@ -2,7 +2,15 @@
 
 ## What Works
 
-### 1. Model Generation
+### 1. CLI Commands
+✅ Command structure with subcommands
+✅ Help messages and documentation
+✅ Standardized command execution
+✅ Global options
+✅ Command-specific arguments
+✅ Clear error messages
+
+### 2. Model Generation
 ✅ Basic model generation
 ✅ Field validation
 ✅ Custom validation methods
@@ -10,7 +18,7 @@
 ✅ Type safety
 ✅ Null safety
 
-### 2. BLoC Generation
+### 3. BLoC Generation
 ✅ State classes
 ✅ Event classes
 ✅ Cubit implementation
@@ -22,7 +30,7 @@
 ✅ Enhanced logging
 ✅ File scanning statistics
 
-### 3. Validation
+### 4. Validation
 ✅ Field-level validation
 ✅ Custom validation methods
 ✅ Preprocessing hooks
@@ -30,7 +38,7 @@
 ✅ Type safety
 ✅ Null safety
 
-### 4. Testing
+### 5. Testing
 ✅ Model tests
 ✅ BLoC tests
 ✅ Validation tests
@@ -40,7 +48,18 @@
 
 ## What's Left to Build
 
-### 1. Model Features
+### 1. CLI Features
+✅ Basic command structure
+✅ Help messages
+✅ Standard execution
+🔄 Interactive mode
+🔄 Configuration files
+🔄 Plugin system
+🔄 Progress indicators
+🔄 Advanced options
+🔄 Command completion
+
+### 2. Model Features
 ✅ Nested model support
 🔄 Complex validation rules
 🔄 Custom error messages
@@ -48,7 +67,7 @@
 🔄 Validation groups
 🔄 Custom types
 
-### 2. BLoC Features
+### 3. BLoC Features
 ✅ Case-insensitive annotation detection
 ✅ Proper directory handling
 ✅ Enhanced logging
@@ -60,7 +79,7 @@
 🔄 State persistence
 🔄 State history
 
-### 3. Validation Features
+### 4. Validation Features
 ✅ Field-level validation
 ✅ Custom validation methods
 ✅ Preprocessing hooks
@@ -71,7 +90,7 @@
 🔄 Async validation
 🔄 Validation caching
 
-### 4. Testing Features
+### 5. Testing Features
 ✅ Basic unit tests
 ✅ BLoC generation tests
 ✅ Directory handling tests
@@ -85,13 +104,26 @@
 
 ## Current Status
 
-### 1. Model Generation
+### 1. CLI Implementation
+- Basic command structure complete
+- Recent improvements:
+  - Standardized command execution
+  - Clear subcommands (bloc, model)
+  - Improved help messages
+  - Updated documentation
+- Working on:
+  - Interactive mode
+  - Configuration files
+  - Plugin system
+  - Progress indicators
+
+### 2. Model Generation
 - Basic features complete
 - Working on nested models
 - Planning complex validation
 - Considering custom types
 
-### 2. BLoC Generation
+### 3. BLoC Generation
 - Core features complete
 - Recent improvements:
   - Case-insensitive annotation detection
@@ -103,13 +135,13 @@
   - Nested states
   - Middleware support
 
-### 3. Validation
+### 4. Validation
 - Basic validation complete
 - Working on cross-field validation
 - Planning validation groups
 - Considering async validation
 
-### 4. Testing
+### 5. Testing
 - Basic tests complete
 - Recent additions:
   - Directory handling tests
@@ -122,13 +154,21 @@
 
 ## Known Issues
 
-### 1. Model Issues
+### 1. CLI Issues
+- Interactive mode not implemented
+- Configuration file support needed
+- Plugin system pending
+- Progress indicators missing
+- Command completion needed
+- Advanced options pending
+
+### 2. Model Issues
 - Nested model validation
 - Complex validation rules
 - Custom error messages
 - Field dependencies
 
-### 2. BLoC Issues
+### 3. BLoC Issues
 - State transition timing
 - Validation edge cases
 - Error message consistency
@@ -136,13 +176,13 @@
 - Directory handling edge cases
 - Annotation format variations
 
-### 3. Validation Issues
+### 4. Validation Issues
 - Cross-field validation
 - Validation groups
 - Custom error types
 - Async validation
 
-### 4. Testing Issues
+### 5. Testing Issues
 - Integration test coverage
 - Performance benchmarks
 - Memory usage
@@ -152,13 +192,20 @@
 
 ## Evolution of Decisions
 
-### 1. Model Generation
+### 1. CLI Development
+- Started with basic commands
+- Added subcommands
+- Improved help messages
+- Added documentation
+- Planning interactive mode
+
+### 2. Model Generation
 - Started with basic models
 - Added validation
 - Added preprocessing
 - Planning nested models
 
-### 2. BLoC Generation
+### 3. BLoC Generation
 - Started with basic states
 - Added validation
 - Added error handling
@@ -167,13 +214,13 @@
 - Added enhanced logging
 - Planning nested states
 
-### 3. Validation
+### 4. Validation
 - Started with field validation
 - Added custom methods
 - Added preprocessing
 - Planning complex rules
 
-### 4. Testing
+### 5. Testing
 - Started with unit tests
 - Added BLoC tests
 - Added error cases
@@ -184,22 +231,22 @@
 ## Next Steps
 
 ### 1. Immediate
-- Test directory handling with various project structures
-- Verify annotation detection with different formats
-- Add more test cases for edge cases
-- Improve error messages further
+- Complete CLI documentation
+- Test all command variations
+- Verify help messages
+- Add command examples
 
 ### 2. Short Term
-- Add support for custom bloc event handling
-- Improve state transition validation
-- Add more validation types
-- Enhance error handling
+- Implement interactive mode
+- Add configuration files
+- Create plugin system
+- Add progress indicators
 
 ### 3. Long Term
-- Add complex validation
-- Support custom types
-- Add middleware
-- Grow community
+- Improve CLI performance
+- Add advanced features
+- Grow command set
+- Enhance user experience
 
 ## Success Metrics
 

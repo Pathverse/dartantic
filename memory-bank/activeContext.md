@@ -43,25 +43,72 @@
    - Clean orchestration in main.dart ✅
 
 ## Current Work Focus
-- Deep nested model validation (using dttFromMap) in test/codegen/chain_model_test.dart.
-- Ensuring that preprocessing (e.g. _dttpreprocess_email) and custom validations (e.g. validateEmailFormat) are applied correctly.
+- CLI command structure and documentation
+- BLoC generation workflow improvements
+- Enhanced user experience with clear command documentation
 
 ## Recent Changes
-- Updated test/codegen/chain_model_test.dart to use dttFromMap (instead of dttCreate) for deep nested validation.
-- Added a preprocessing method (_dttpreprocess_email) in ContactInfo (and regenerated the .g.dart) so that email is trimmed and lowercased.
-- (If applicable) Updated the test data (for example, added a valid phone for the manager's contact) so that all validations pass.
+- Updated CLI command structure with clear subcommands:
+  - `bloc` - Generate bloc state management code
+  - `model` - Generate model validation logic
+- Improved CLI documentation and help messages
+- Updated README.md with comprehensive usage examples
+- Standardized command execution through `dartantic:dtt` executable
 
 ## Next Steps
-- Verify that all tests (including "Chain model validation - preprocessing" and "Chain model serialization/deserialization") pass.
-- (If needed) further refine or add additional test cases (e.g. for deeper nesting or edge cases).
+1. Immediate
+   - Verify CLI command documentation is clear and complete
+   - Test all CLI commands in various scenarios
+   - Ensure help messages are informative
+   - Add more examples to documentation
+
+2. Short Term
+   - Add more CLI subcommands for advanced features
+   - Improve error messages for CLI operations
+   - Add progress indicators for long-running operations
+   - Enhance CLI configuration options
+
+3. Long Term
+   - Add interactive CLI mode
+   - Support configuration files
+   - Add plugin system for CLI
+   - Improve CLI performance
 
 ## Active Decisions & Considerations
-- Use dttFromMap (with nested maps) for deep nested validation (and preprocessing) tests.
-- (If applicable) ensure that every nested model (e.g. ContactInfo) has the necessary preprocessing (and validation) methods (e.g. _dttpreprocess_email) so that the generated pipeline (dttFromMap) works as expected.
+1. CLI Command Structure
+   - Use subcommands for clear organization
+   - Provide detailed help messages
+   - Follow standard CLI patterns
+   - Ensure consistent command naming
+
+2. Documentation
+   - Keep README.md up to date
+   - Include clear examples
+   - Document all commands
+   - Provide usage patterns
+
+3. User Experience
+   - Clear error messages
+   - Consistent command structure
+   - Helpful documentation
+   - Intuitive command names
 
 ## Important Patterns & Preferences
-- (If applicable) Always regenerate (via "dart run build_runner build --delete-conflicting-outputs") after adding or updating preprocessing (or validation) methods.
-- (If applicable) Use "dart test --chain-stack-traces" for detailed error traces.
+1. CLI Usage
+   ```bash
+   # Run using package name
+   dart run dartantic:dtt <command> [arguments]
+   
+   # Available commands
+   dartantic:dtt bloc    # Generate bloc state management code
+   dartantic:dtt model   # Generate model validation logic
+   ```
+
+2. Command Structure
+   - Use subcommands for organization
+   - Provide global options (e.g., --help)
+   - Include command-specific arguments
+   - Follow standard CLI conventions
 
 ## Learnings & Project Insights
 - (If applicable) Deep nested validation (using dttFromMap) requires that every nested model (e.g. ContactInfo) has its preprocessing (and validation) methods (e.g. _dttpreprocess_email) defined (and regenerated) so that the generated pipeline (dttFromMap) applies preprocessing (and validation) as intended.
